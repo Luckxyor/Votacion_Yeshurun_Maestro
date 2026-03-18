@@ -45,7 +45,7 @@
           <h2 id="modalBorrarTitulo">Borrar voto de alumno</h2>
           <button id="cerrarModalBorrar" class="icon-btn" type="button" aria-label="Cerrar">X</button>
         </div>
-        <p id="modalPasoTexto" class="modal-step">Paso 1 de 3</p>
+        <p id="modalPasoTexto" class="modal-step">Paso 1 de 2</p>
         <p id="modalSeleccionTexto" class="modal-help">Selecciona una sala.</p>
         <div id="modalOpciones" class="modal-options"></div>
         <p id="modalSinResultados" class="modal-empty hidden">No hay alumnos con voto para este filtro.</p>
@@ -63,6 +63,21 @@
         <div class="modal-actions">
           <button id="confirmarNo" class="btn-secondary" type="button">No</button>
           <button id="confirmarSi" class="btn-danger" type="button">Si, borrar voto</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="modalPendientes" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalPendientesTitulo">
+      <div class="modal-panel modal-panel-sm">
+        <div class="modal-head">
+          <h2 id="modalPendientesTitulo">Alumnos pendientes</h2>
+          <button id="cerrarModalPendientes" class="icon-btn" type="button" aria-label="Cerrar">X</button>
+        </div>
+        <p id="modalPendientesSubtitulo" class="modal-help">Cargando...</p>
+        <ul id="listaPendientes" class="pendientes-list"></ul>
+        <p id="pendientesVacio" class="modal-empty hidden">Todos los alumnos ya votaron.</p>
+        <div class="modal-actions">
+          <button id="btnCerrarPendientes" class="btn-secondary" type="button">Cerrar</button>
         </div>
       </div>
     </div>

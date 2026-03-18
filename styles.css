@@ -162,10 +162,37 @@ select {
 }
 
 .sala-group-title {
-  margin: 0 0 10px;
+  margin: 0;
   font-size: 1.1rem;
   color: #18448f;
   letter-spacing: 0.3px;
+}
+
+.sala-group-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.sala-group-tools {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sala-restantes {
+  color: #7b879c;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.btn-pendientes {
+  padding: 8px 12px;
+  font-size: 0.9rem;
 }
 
 .sala-group-grid {
@@ -379,6 +406,17 @@ th {
   width: 42px;
   height: 42px;
   padding: 0;
+}
+
+.pendientes-list {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+}
+
+.pendientes-list li {
+  color: #2a3f5f;
 }
 
 .hidden {

@@ -25,22 +25,23 @@ const $modalConfirmar = document.getElementById("modalConfirmar");
 const $modalConfirmarTexto = document.getElementById("modalConfirmarTexto");
 const $confirmarNo = document.getElementById("confirmarNo");
 const $confirmarSi = document.getElementById("confirmarSi");
+const $modalPendientes = document.getElementById("modalPendientes");
+const $cerrarModalPendientes = document.getElementById("cerrarModalPendientes");
+const $btnCerrarPendientes = document.getElementById("btnCerrarPendientes");
+const $modalPendientesSubtitulo = document.getElementById("modalPendientesSubtitulo");
+const $listaPendientes = document.getElementById("listaPendientes");
+const $pendientesVacio = document.getElementById("pendientesVacio");
 
 let supabaseClient = null;
 let propuestas = [];
 let votos = [];
 let salas = [];
+let alumnos = [];
 let salaSeleccionada = "todas";
 let pasoBorrado = 1;
 let salaBorrado = null;
-let generoBorrado = null;
 let alumnoBorrado = null;
 let alumnosConVoto = [];
-
-const generosDisponibles = [
-  { id: 1, nombre: "Niño" },
-  { id: 2, nombre: "Niña" }
-];
 
 function mostrarError(mensaje) {
   $errorBox.textContent = mensaje;
@@ -79,9 +80,38 @@ function normalizarResultados() {
   if (salaSeleccionada !== "todas") {
     data = data.filter((d) => String(d.id_sala) === salaSeleccionada);
   }
-
-  data.sort((a, b) => b.votos - a.votos || a.nombre.localeCompare(b.nombre));
   return data;
+}
+
+function getPendientesPorSala(idSala) {
+  const idSalaNumero = Number(idSala);
+  const idsConVoto = new Set((votos || []).map((v) => v.id_alumno).filter((id) => id != null));
+
+  return (alumnos || [])
+    .filter((a) => a.id_sala === idSalaNumero && !idsConVoto.has(a.id))
+    .sort((a, b) => a.nombre.localeCompare(b.nombre));
+}
+
+function abrirModalPendientes(idSala) {
+  const sala = salas.find((s) => s.id === Number(idSala));
+  const pendientes = getPendientesPorSala(idSala);
+  const tituloSala = sala?.nombre_sala || `Sala ${idSala}`;
+
+  $modalPendientesSubtitulo.textContent = `${tituloSala} - Voto/s restante/s ${pendientes.length}`;
+
+  if (!pendientes.length) {
+    $listaPendientes.innerHTML = "";
+    $pendientesVacio.classList.remove("hidden");
+  } else {
+    $pendientesVacio.classList.add("hidden");
+    $listaPendientes.innerHTML = pendientes.map((a) => `<li>${a.nombre}</li>`).join("");
+  }
+
+  $modalPendientes.classList.remove("hidden");
+}
+
+function cerrarModalPendientes() {
+  $modalPendientes.classList.add("hidden");
 }
 
 function render(data) {
@@ -91,6 +121,22 @@ function render(data) {
   }
 
   const max = Math.max(...data.map((d) => d.votos), 1);
+  const renderSalaGroup = (idSala, nombreSala, items, salaIndex) => {
+    const cards = items.map((item, idx) => cardMarkup(item, salaIndex * 10 + idx)).join("");
+    const restantes = getPendientesPorSala(idSala).length;
+    return `
+      <section class="sala-group">
+        <div class="sala-group-head">
+          <h3 class="sala-group-title">${nombreSala}</h3>
+          <div class="sala-group-tools">
+            <span class="sala-restantes">Voto/s restante/s ${restantes}</span>
+            <button class="btn-secondary btn-pendientes" type="button" data-action="ver-pendientes" data-sala-id="${idSala}">Ver faltantes</button>
+          </div>
+        </div>
+        <div class="sala-group-grid">${cards}</div>
+      </section>
+    `;
+  };
 
   const cardMarkup = (item, idx) => {
     const pct = Math.round((item.votos / max) * 100);
@@ -135,27 +181,20 @@ function render(data) {
     $resultadosCards.innerHTML = idsFinales
       .map((idSala, salaIndex) => {
         const grupo = porSala[idSala];
-        const cards = grupo.items
-          .map((item, idx) => cardMarkup(item, salaIndex * 10 + idx))
-          .join("");
-        return `
-          <section class="sala-group">
-            <h3 class="sala-group-title">${grupo.nombre}</h3>
-            <div class="sala-group-grid">${cards}</div>
-          </section>
-        `;
+        return renderSalaGroup(idSala, grupo.nombre, grupo.items, salaIndex);
       })
       .join("");
     return;
   }
 
-  $resultadosCards.innerHTML = data.map((item, idx) => cardMarkup(item, idx)).join("");
+  const idSala = Number(salaSeleccionada);
+  const nombreSala = salas.find((s) => s.id === idSala)?.nombre_sala || `Sala ${idSala}`;
+  $resultadosCards.innerHTML = renderSalaGroup(idSala, nombreSala, data, 0);
 }
 
 function abrirModalBorrar() {
   pasoBorrado = 1;
   salaBorrado = null;
-  generoBorrado = null;
   alumnoBorrado = null;
   alumnosConVoto = [];
   $modalBorrar.classList.remove("hidden");
@@ -196,9 +235,8 @@ async function cargarAlumnosConVoto() {
   const [alumnosResp, votosResp] = await Promise.all([
     supabaseClient
       .from(tableNames.alumno)
-      .select("id, nombre, id_sala, id_genero")
+      .select("id, nombre, id_sala")
       .eq("id_sala", salaBorrado)
-      .eq("id_genero", generoBorrado)
       .order("nombre", { ascending: true }),
     supabaseClient.from(tableNames.votacion).select("id_alumno")
   ]);
@@ -215,30 +253,16 @@ function renderPasoBorrado() {
   $modalAtras.classList.toggle("hidden", pasoBorrado === 1);
 
   if (pasoBorrado === 1) {
-    $modalPasoTexto.textContent = "Paso 1 de 3";
+    $modalPasoTexto.textContent = "Paso 1 de 2";
     $modalSeleccionTexto.textContent = "Selecciona una sala.";
     renderOpciones(
       salas
         .slice()
         .sort((a, b) => a.id - b.id)
         .map((s) => ({ id: s.id, label: s.nombre_sala })),
-      (salaElegida) => {
+      async (salaElegida) => {
         salaBorrado = salaElegida.id;
         pasoBorrado = 2;
-        renderPasoBorrado();
-      }
-    );
-    return;
-  }
-
-  if (pasoBorrado === 2) {
-    $modalPasoTexto.textContent = "Paso 2 de 3";
-    $modalSeleccionTexto.textContent = "Selecciona el genero del alumno.";
-    renderOpciones(
-      generosDisponibles.map((g) => ({ id: g.id, label: g.nombre })),
-      async (generoElegido) => {
-        generoBorrado = generoElegido.id;
-        pasoBorrado = 3;
         try {
           await cargarAlumnosConVoto();
           renderPasoBorrado();
@@ -250,7 +274,7 @@ function renderPasoBorrado() {
     return;
   }
 
-  $modalPasoTexto.textContent = "Paso 3 de 3";
+  $modalPasoTexto.textContent = "Paso 2 de 2";
   $modalSeleccionTexto.textContent = "Selecciona el alumno que ya emitio su voto.";
   if (!alumnosConVoto.length) {
     $modalOpciones.innerHTML = "";
@@ -292,8 +316,6 @@ function inicializarFlujoBorrado() {
   $modalAtras.addEventListener("click", async () => {
     if (pasoBorrado === 2) {
       pasoBorrado = 1;
-    } else if (pasoBorrado === 3) {
-      pasoBorrado = 2;
     }
     renderPasoBorrado();
   });
@@ -316,6 +338,24 @@ function inicializarFlujoBorrado() {
   });
 }
 
+function inicializarModalPendientes() {
+  $resultadosCards.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-action='ver-pendientes']");
+    if (!button) return;
+    const idSala = Number(button.dataset.salaId);
+    abrirModalPendientes(idSala);
+  });
+
+  $cerrarModalPendientes.addEventListener("click", cerrarModalPendientes);
+  $btnCerrarPendientes.addEventListener("click", cerrarModalPendientes);
+
+  $modalPendientes.addEventListener("click", (event) => {
+    if (event.target === $modalPendientes) {
+      cerrarModalPendientes();
+    }
+  });
+}
+
 async function cargarSalas() {
   const { data, error } = await supabaseClient
     .from(tableNames.sala)
@@ -332,19 +372,25 @@ async function cargarSalas() {
 }
 
 async function cargarData() {
-  const [propuestasResp, votosResp] = await Promise.all([
+  const [propuestasResp, votosResp, alumnosResp] = await Promise.all([
     supabaseClient
       .from(tableNames.propuestas)
       .select("id, nombre_propuesta, id_sala")
       .order("id", { ascending: true }),
-    supabaseClient.from(tableNames.votacion).select("id_propuesta")
+    supabaseClient.from(tableNames.votacion).select("id_propuesta, id_alumno"),
+    supabaseClient
+      .from(tableNames.alumno)
+      .select("id, nombre, id_sala")
+      .order("nombre", { ascending: true })
   ]);
 
   if (propuestasResp.error) throw propuestasResp.error;
   if (votosResp.error) throw votosResp.error;
+  if (alumnosResp.error) throw alumnosResp.error;
 
   propuestas = propuestasResp.data || [];
   votos = votosResp.data || [];
+  alumnos = alumnosResp.data || [];
 
   render(normalizarResultados());
   actualizarTimestamp();
@@ -402,6 +448,7 @@ async function iniciar() {
     await cargarSalas();
     await cargarData();
     inicializarFlujoBorrado();
+    inicializarModalPendientes();
     suscribirRealtime();
     ocultarError();
   } catch (error) {
