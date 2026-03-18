@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Monitor de Votacion - Profesores</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&family=Baloo+2:wght@600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="bg-shape bg-shape-a" aria-hidden="true"></div>
+    <div class="bg-shape bg-shape-b" aria-hidden="true"></div>
+
+    <main class="layout">
+      <header class="hero">
+        <p class="eyebrow">Monitoreo docente en tiempo real</p>
+        <h1>Resultados de votacion por nombre de sala</h1>
+      </header>
+
+      <section class="controls card">
+        <div>
+          <label for="filtroSala">Filtrar por sala</label>
+          <select id="filtroSala">
+            <option value="todas">Todas las salas</option>
+          </select>
+        </div>
+        <div class="status-wrap">
+          <span id="estadoConexion" class="status">Conectando...</span>
+          <span id="ultimaActualizacion" class="timestamp">Sin actualizacion</span>
+        </div>
+      </section>
+
+      <section class="grid" id="resultadosCards" aria-live="polite"></section>
+
+      <section class="card error hidden" id="errorBox"></section>
+    </main>
+
+    <button id="btnBorrarVoto" class="fab-delete" type="button">Borrar voto alumno</button>
+
+    <div id="modalBorrar" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalBorrarTitulo">
+      <div class="modal-panel">
+        <div class="modal-head">
+          <h2 id="modalBorrarTitulo">Borrar voto de alumno</h2>
+          <button id="cerrarModalBorrar" class="icon-btn" type="button" aria-label="Cerrar">X</button>
+        </div>
+        <p id="modalPasoTexto" class="modal-step">Paso 1 de 3</p>
+        <p id="modalSeleccionTexto" class="modal-help">Selecciona una sala.</p>
+        <div id="modalOpciones" class="modal-options"></div>
+        <p id="modalSinResultados" class="modal-empty hidden">No hay alumnos con voto para este filtro.</p>
+        <div class="modal-actions">
+          <button id="modalAtras" class="btn-secondary hidden" type="button">Atras</button>
+          <button id="modalCerrar" class="btn-secondary" type="button">Cerrar</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="modalConfirmar" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalConfirmarTitulo">
+      <div class="modal-panel modal-panel-sm">
+        <h2 id="modalConfirmarTitulo">Confirmar borrado</h2>
+        <p id="modalConfirmarTexto">Estas seguro de borrar el voto?</p>
+        <div class="modal-actions">
+          <button id="confirmarNo" class="btn-secondary" type="button">No</button>
+          <button id="confirmarSi" class="btn-danger" type="button">Si, borrar voto</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
