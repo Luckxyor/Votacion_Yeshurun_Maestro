@@ -4,7 +4,6 @@
   tables: {
     propuestas: "propuestas",
     votacion: "votacion",
-    sala: "sala",
-    alumno: "alumno"
+    sala: "sala"
   }
 };

@@ -169,30 +169,7 @@ select {
 }
 
 .sala-group-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
   margin-bottom: 10px;
-  flex-wrap: wrap;
-}
-
-.sala-group-tools {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.sala-restantes {
-  color: #7b879c;
-  font-size: 0.9rem;
-  font-weight: 700;
-}
-
-.btn-pendientes {
-  padding: 8px 12px;
-  font-size: 0.9rem;
 }
 
 .sala-group-grid {
@@ -317,14 +294,6 @@ th {
   width: min(540px, 100%);
 }
 
-.modal-panel h2 {
-  font-size: 1.45rem;
-}
-
-.modal-panel p {
-  font-size: 1.05rem;
-}
-
 .modal-head {
   display: flex;
   justify-content: space-between;
@@ -379,7 +348,6 @@ th {
 }
 
 .btn-secondary,
-.btn-danger,
 .icon-btn {
   border: 0;
   border-radius: 12px;
@@ -395,28 +363,12 @@ th {
   color: #204172;
 }
 
-.btn-danger {
-  background: #b42318;
-  color: #ffffff;
-}
-
 .icon-btn {
   background: #eef3fd;
   color: #1d3f74;
   width: 42px;
   height: 42px;
   padding: 0;
-}
-
-.pendientes-list {
-  margin: 0;
-  padding-left: 18px;
-  display: grid;
-  gap: 6px;
-}
-
-.pendientes-list li {
-  color: #2a3f5f;
 }
 
 .hidden {
@@ -452,4 +404,5 @@ th {
     right: 12px;
     bottom: 12px;
   }
+
 }
